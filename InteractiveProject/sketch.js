@@ -18,7 +18,7 @@ PLANNING CODE
 
 
 //global variables
-let TP = 50;
+let TP = 0;
 let PercentTP;
 let playerHP = 160;
 let playerPercentHP;
@@ -38,6 +38,8 @@ let shiftChoice = false;
 let buttonChoice = false;
 let actionChoice = false;
 let buttonLock = false;
+
+let defending = false;
 
 
 function preload () {
@@ -65,6 +67,9 @@ function draw () {
   }
   if (turnPart == 1) {
     EnemyTurn();
+    buttonChoice = false;
+    actionChoice = false;
+    buttonLock = false;
   }
 }
 
@@ -91,6 +96,18 @@ function constantUI () {
 
   fill(255, 200, 0);
   quad(100, PercentTP, 130, (PercentTP - 30), 130, 620, 100, 650);
+
+  fill(255);
+  textStyle(BOLDITALIC);
+  textSize(25);
+  text('T', 60, 180);
+  text('P', 60, 210);
+
+  textAlign(CENTER);
+  text(TP, 65, 240);
+
+  textStyle(ITALIC);
+  text('%', 65, 270);
 
 
   //player stats
@@ -220,7 +237,15 @@ function spare () {
 }
 
 function defend () {
-  // tp = tp + 16
+  TP = TP + 16;
+  if (TP > 100) {
+    TP = 100;
+  }
+
+  // ADD ANIMATION 
+  
+  turnPart = 1;
+  defending = true;
 }
 
 
@@ -278,6 +303,9 @@ function EnemyTurn () {
 
     playerX = 720;
     playerY = 375;
+
+    defending = false;
+    playerChoice = 0;
   }
 }
 
