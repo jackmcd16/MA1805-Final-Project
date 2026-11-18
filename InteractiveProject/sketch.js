@@ -35,11 +35,13 @@ let playerBorder;
 let playerChoice = 0;
 let shiftChoice = false;
 
-let buttonChoice = false;
-let actionChoice = false;
+let choiceLevel = 1;
 let buttonLock = false;
 
 let defending = false;
+
+let actSelect = 0;
+let shiftAct = false;
 
 
 function preload () {
@@ -67,8 +69,7 @@ function draw () {
   }
   if (turnPart == 1) {
     EnemyTurn();
-    buttonChoice = false;
-    actionChoice = false;
+    choiceLevel = 1;
     buttonLock = false;
   }
 }
@@ -100,10 +101,10 @@ function constantUI () {
   fill(255);
   textStyle(BOLDITALIC);
   textSize(25);
+  textAlign(CENTER);
   text('T', 60, 180);
   text('P', 60, 210);
 
-  textAlign(CENTER);
   text(TP, 65, 240);
 
   textStyle(ITALIC);
@@ -141,9 +142,6 @@ function constantUI () {
   strokeWeight(5);
   rect(width/2, 900, 1380, 300);
 }
-
-
-
 
 
 
@@ -185,8 +183,7 @@ function PlayerTurn () {
   rect(width/2 + buttonX[playerChoice], 715, 50, 40);
 
   //if enter is clicked, checks the index to run correct button
-  if (buttonChoice == true) {
-    actionChoice = false;
+  if (choiceLevel == 2) {
 
     if (playerChoice == 0) {
       attack();
@@ -207,24 +204,83 @@ function keyPressed () {
     if (buttonLock == false) {
       shiftChoice = true;
     }
+  } else if (keyCode === 38 || keyCode === 40) {
+    shiftAct = true;
   } else if (keyCode === 13) {
-    buttonChoice = true;
-    actionChoice = true;
+    choiceLevel = choiceLevel + 1;
     buttonLock = true;
   } else if (keyCode === 8) {
     buttonLock = false;
-    buttonChoice = false;
+    choiceLevel = choiceLevel - 1;
   }
 }
+
+
 
 function attack () {
   //check timer when enter is clicked, compare to parameters for dmg
   // check enemy HP after attack, if at 0 end fight
 }
 
+
+let actions = [
+  //[name, TP cost, description]
+  ['Check', 0, 'enemy information'],
+  ['Disconnect', 16, '16 TP, disconnect camera'],
+  ['Unplug', 100, '100 TP, shut it down'],
+]
+
 function act () {
-  //check if enough TP, 2 actions to do
+  //check
+  //disconnect, 16 TP
+  //unplug, 100 TP
+
+  let textPosition = 840;
+  
+  for (let i = 0; i < actions.length; i++) {
+    fill(255);
+    noStroke();
+    textStyle(BOLD);
+    textSize(35);
+    textAlign(LEFT);
+    text(actions[i][0], 100, textPosition)
+    textPosition = textPosition + 75;
+  }
+
+  let actX = [830, 905, 980];
+
+  if (shiftAct == true) {
+    shiftAct = false;
+
+    if (keyCode === 38) {
+      actSelect--
+    } else if (keyCode === 40) {
+      actSelect++
+    }
+
+    //loops if presses left on the far left key, and right on the far right key
+    if (actSelect < 0) {
+      actSelect = 4;
+    } else if (actSelect >= actions.length) {
+      actSelect = 0;
+    }
+  }
+
+  fill(255, 0, 0);
+  circle(70, actX[actSelect], 30);
 }
+
+
+
+let itemList = [
+  //[itemName, health/TP gain, description]
+  ['LancerCookie', 50],
+  ['ChocDiamond', 80],
+  ['HeartDonut', 20],
+  ['Darkburger', 70],
+  ['ReviveMint', 999],
+  ['TensionBit', 32],
+]
 
 function item () {
   //use a 2D array to have each item, description and healing factor
@@ -247,6 +303,7 @@ function defend () {
   turnPart = 1;
   defending = true;
 }
+
 
 
 
@@ -307,18 +364,4 @@ function EnemyTurn () {
     defending = false;
     playerChoice = 0;
   }
-}
-
-
-function CollisionCheck () {
-  //damage if too close
-  //addTP if within parameters
-}
-
-function PlayerHP () {
-  
-}
-
-function EnemyHP () {
-  
 }
