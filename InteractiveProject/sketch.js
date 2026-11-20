@@ -1,22 +1,3 @@
-
-/*
-
-PLANNING CODE
-
-  constant animation
-    player
-    enemy
-  constant UI
-    player HP
-    TP Bar
-  enemy attacks
-  mercy and death checks
-
-  switch case to the turnPart
-
-*/
-
-
 //global variables
 // player stats
 let TP = 0;
@@ -27,8 +8,9 @@ let playerPercentHP;
 let playerX = 720;
 let playerY = 375;
 
-let enemyHP = 300;
-let mercyPercent = 0;
+let enemyHP = 400;
+let mercy = 0;
+let mercyCheck = false;
 
 let playerPosition;
 let playerBorder;
@@ -65,6 +47,7 @@ function setup () {
 
 function draw () {
   constantUI();
+  endGame();
 
   //turn choice
   if (turnPart == 0) {
@@ -112,7 +95,6 @@ function constantUI () {
   noStroke();
   fill(150, 0, 0);
   quad(100, 140, 130, 110, 130, 620, 100, 650);
-
   fill(255, 200, 0);
   quad(100, PercentTP, 130, (PercentTP - 30), 130, 620, 100, 650);
 
@@ -122,7 +104,6 @@ function constantUI () {
   textAlign(CENTER);
   text('T', 60, 180);
   text('P', 60, 210);
-
   text(TP, 65, 240);
 
   textStyle(ITALIC);
@@ -218,12 +199,44 @@ function PlayerTurn () {
 }
 
 
+let enemyPercent;
 
 function attack () {
   //check timer when enter is clicked, compare to parameters for dmg
   // check enemy HP after attack, if at 0 end fight
-}
+  if (mercy == 100) {
+    fill(255, 255, 0);
+  } else {
+    fill(255);
+  }
+  noStroke();
+  textStyle(BOLD);
+  textSize(35);
+  textAlign(LEFT);
+  text('The Flock', 100, 840);
 
+  fill(255, 0, 0);
+  circle(70, 830, 30);               //NOTE: REPLACE WITH ASSET
+
+  noStroke();
+  fill(150, 0, 0);
+  rect((width/2) + 500, 900, 170, 30);
+  enemyPercent = enemyHP / 400;
+  fill(255, 200, 0);
+  rect((width/2 + 500) - (85 - (enemyPercent * 85)), 900, (enemyPercent * 170), 30);
+
+  let damage;
+  if (choiceLevel == 3) {
+    let crit = random(1, 10);
+    if (crit == 10) {
+      damage = random(90, 100);
+    } else {
+       damage = random(45, 55);
+    }
+    enemyHP = enemyHP - damage;
+    turnPart = 1;
+  }
+}
 
 let actions = [
   //[name, TP cost, description]
@@ -269,7 +282,7 @@ function act () {
   }
 
   fill(255, 0, 0);
-  circle(70, actX[actSelect], 30);
+  circle(70, actX[actSelect], 30);               //NOTE: REPLACE WITH ASSET
 
   fill(100);
   textWrap(WORD);
@@ -278,31 +291,25 @@ function act () {
   if (choiceLevel == 3 && TP >= actions[actSelect][1]) {
     turnPart = 1;
     TP = TP - actions[actSelect][1];
-    mercyPercent = mercyPercent + actions[actSelect][3];
-    if (mercyPercent > 100) {
-      mercyPercent = 0;
+    mercy = mercy + actions[actSelect][3];
+    if (mercy > 100) {
+      mercy = 100;
     }
   } else {
     if (choiceLevel == 3) {
       choiceLevel = 2;
     }
   }
-
-  //add description of action on the right
-  //program each button
-  //add description for a few seconds before cutting to gameplay
 }
-
-
 
 let itemList = [
   //[itemName, health/TP gain, description]
-  ['LancerCookie', 50],
-  ['ChocDiamond', 80],
-  ['HeartDonut', 20],
-  ['Darkburger', 70],
-  ['ReviveMint', 999],
-  ['TensionBit', 32],
+  ['LancerCookie', 50, 0, 'Heal 50 HP'],
+  ['ChocDiamond', 80, 0, 'Varied Healing'],
+  ['HeartDonut', 20, 0, 'Varied Healing'],
+  ['Darkburger', 70, 0, 'Heal 70 HP'],
+  ['ReviveMint', 999, 0, 'Fully Heal'],
+  ['TensionBit', 32, 1, 'Gain 32 TP'],
 ]
 
 let shiftItem = false;
@@ -350,12 +357,61 @@ function item () {
   }
 
   fill(255, 0, 0);
-  circle(itemX[itemSelect], itemY[itemSelect], 30);
+  circle(itemX[itemSelect], itemY[itemSelect], 30);                //NOTE: REPLACE WITH ASSET
+
+  fill(100);
+  textWrap(WORD);
+  text(itemList[itemSelect][3], 1200, 840, 200);
+
+  if (choiceLevel == 3) {
+    turnPart = 1;
+    if (itemList[itemSelect][2] == 1) {
+      TP = TP + itemList[itemSelect][1];
+      if (TP > 100) {
+        TP = 100;
+      }
+    } else {
+      playerHP = playerHP + itemList[itemSelect][1];
+      if (playerHP > 160) {
+        playerHP = 160;
+      }
+    }
+    itemList.splice(itemSelect, 1);
+  }
 }
 
 function spare () {
-  // if spare == 100, end the fight
-  // else the spare fails
+  if (mercy == 100) {
+    fill(255, 255, 0);
+  } else {
+    fill(255);
+  }
+  noStroke();
+  textStyle(BOLD);
+  textSize(35);
+  textAlign(LEFT);
+  text('The Flock', 100, 840);
+
+  fill(255, 0, 0);
+  circle(70, 830, 30);                //NOTE: REPLACE WITH ASSET
+
+  noStroke();
+  fill(150, 0, 0);
+  rect((width/2) + 500, 900, 170, 30);
+  mercyPercent = mercy / 100;
+  fill(255, 200, 0);
+  rect((width/2 + 500) - (85 - (mercyPercent * 85)), 900, (mercyPercent * 170), 30);
+
+  if (choiceLevel == 3) {
+    if (mercy == 100) {
+      mercyCheck = true;
+      turnPart = 1;
+    } else {
+      choiceLevel = 2;
+    }
+  }
+
+
 }
 
 function defend () {
@@ -369,7 +425,6 @@ function defend () {
   turnPart = 1;
   defending = true;
 }
-
 
 
 
@@ -401,7 +456,6 @@ function EnemyTurn () {
   if (playerX < 535) {
     playerX = 535;
   }
-
   if (playerY > 560) {
     playerY = 560;
   } 
@@ -429,5 +483,25 @@ function EnemyTurn () {
 
     defending = false;
     playerChoice = 0;
+  }
+}
+
+
+let endMessage;
+
+function endGame () {
+  if (playerHP <= 0 || mercyCheck == true || enemyHP <= 0) {
+    turnPart = -1
+    if (playerHP <= 0) {
+      endMessage = 'GAME OVER'
+    } else if (mercyCheck == true) {
+      endMessage = 'YOU WIN! You spared the Flock'
+    } else if (enemyHP <= 0) {
+      endMessage = 'YOU WIN! You defeated the Flock'
+    }
+    background(0);
+    fill(255);
+    textSize(80);
+    text(endMessage, width/2, height/2);
   }
 }
