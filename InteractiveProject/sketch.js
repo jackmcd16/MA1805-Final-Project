@@ -18,6 +18,7 @@ PLANNING CODE
 
 
 //global variables
+// player stats
 let TP = 0;
 let PercentTP;
 let playerHP = 160;
@@ -26,11 +27,14 @@ let playerPercentHP;
 let playerX = 720;
 let playerY = 375;
 
-let turnPart = 0;
-let duration = 0;
+let enemyHP = 300;
+let mercyPercent = 0;
 
 let playerPosition;
 let playerBorder;
+
+let turnPart = 0;
+let duration = 0;
 
 let playerChoice = 0;
 let shiftChoice = false;
@@ -38,16 +42,16 @@ let shiftChoice = false;
 let choiceLevel = 1;
 let buttonLock = false;
 
-let defending = false;
-
 let actSelect = 0;
 let shiftAct = false;
+
+let defending = false;
+
 
 
 function preload () {
 
 }
-
 
 function setup () {
   //centering canvas to web window
@@ -58,7 +62,6 @@ function setup () {
   rectMode(CENTER);
   frameRate(30);
 }
-
 
 function draw () {
   constantUI();
@@ -74,10 +77,25 @@ function draw () {
   }
 }
 
-
-
-
-
+function keyPressed () {
+  if (keyCode === 37 || keyCode === 39) {
+    if (buttonLock == false) {
+      shiftChoice = true;
+    }
+  } else if (keyCode === 38 || keyCode === 40) {
+    shiftAct = true;
+    shiftItem = true;
+  } else if (keyCode === 13) {
+    choiceLevel = choiceLevel + 1;
+    buttonLock = true;
+  } else if (keyCode === 8) {
+    buttonLock = false;
+    choiceLevel = choiceLevel - 1;
+    if (choiceLevel < 1) {
+      choiceLevel = 1;
+    }
+  }
+}
 
 
 
@@ -183,7 +201,7 @@ function PlayerTurn () {
   rect(width/2 + buttonX[playerChoice], 715, 50, 40);
 
   //if enter is clicked, checks the index to run correct button
-  if (choiceLevel == 2) {
+  if (choiceLevel >= 2) {
 
     if (playerChoice == 0) {
       attack();
@@ -199,22 +217,6 @@ function PlayerTurn () {
   }
 }
 
-function keyPressed () {
-  if (keyCode === 37 || keyCode === 39) {
-    if (buttonLock == false) {
-      shiftChoice = true;
-    }
-  } else if (keyCode === 38 || keyCode === 40) {
-    shiftAct = true;
-  } else if (keyCode === 13) {
-    choiceLevel = choiceLevel + 1;
-    buttonLock = true;
-  } else if (keyCode === 8) {
-    buttonLock = false;
-    choiceLevel = choiceLevel - 1;
-  }
-}
-
 
 
 function attack () {
@@ -225,20 +227,20 @@ function attack () {
 
 let actions = [
   //[name, TP cost, description]
-  ['Check', 0, 'enemy information'],
-  ['Disconnect', 16, '16 TP, disconnect camera'],
-  ['Unplug', 100, '100 TP, shut it down'],
+  ['Check', 0, 'enemy information', 0],
+  ['Disconnect', 16, '16 TP, disconnect camera', 30],
+  ['Shutdown', 100, '100 TP, shut it down', 100],
 ]
 
 function act () {
-  //check
-  //disconnect, 16 TP
-  //unplug, 100 TP
-
   let textPosition = 840;
   
   for (let i = 0; i < actions.length; i++) {
-    fill(255);
+    if (TP < actions[i][1]) {
+      fill(150);
+    } else {
+      fill(255);
+    }
     noStroke();
     textStyle(BOLD);
     textSize(35);
@@ -260,7 +262,7 @@ function act () {
 
     //loops if presses left on the far left key, and right on the far right key
     if (actSelect < 0) {
-      actSelect = 4;
+      actSelect = actions.length - 1;
     } else if (actSelect >= actions.length) {
       actSelect = 0;
     }
@@ -268,6 +270,27 @@ function act () {
 
   fill(255, 0, 0);
   circle(70, actX[actSelect], 30);
+
+  fill(100);
+  textWrap(WORD);
+  text(actions[actSelect][2], 1200, 840, 200);
+
+  if (choiceLevel == 3 && TP >= actions[actSelect][1]) {
+    turnPart = 1;
+    TP = TP - actions[actSelect][1];
+    mercyPercent = mercyPercent + actions[actSelect][3];
+    if (mercyPercent > 100) {
+      mercyPercent = 0;
+    }
+  } else {
+    if (choiceLevel == 3) {
+      choiceLevel = 2;
+    }
+  }
+
+  //add description of action on the right
+  //program each button
+  //add description for a few seconds before cutting to gameplay
 }
 
 
@@ -282,9 +305,52 @@ let itemList = [
   ['TensionBit', 32],
 ]
 
+let shiftItem = false;
+let itemSelect = 0;
+
 function item () {
   //use a 2D array to have each item, description and healing factor
   // remove item when used from array, and do the thingy it does
+
+  let textX = 100;
+  let textY = 840;
+
+  for (let i = 0; i < itemList.length; i++) {
+    if (i == 3) {
+      textX = textX + 550;
+      textY = 840;
+    }
+    fill(255);
+    noStroke();
+    textStyle(BOLD);
+    textSize(35);
+    textAlign(LEFT);
+    text(itemList[i][0], textX, textY)
+    textY = textY + 75;
+  }
+
+  let itemY = [830, 905, 980, 830, 905, 980];
+  let itemX = [70, 70, 70, 620, 620, 620];
+
+  if (shiftItem == true) {
+    shiftItem = false;
+
+    if (keyCode === 38) {
+      itemSelect--
+    } else if (keyCode === 40) {
+      itemSelect++
+    }
+
+    //loops if presses left on the far left key, and right on the far right key
+    if (itemSelect < 0) {
+      itemSelect = itemList.length - 1;
+    } else if (itemSelect >= itemList.length) {
+      itemSelect = 0;
+    }
+  }
+
+  fill(255, 0, 0);
+  circle(itemX[itemSelect], itemY[itemSelect], 30);
 }
 
 function spare () {
